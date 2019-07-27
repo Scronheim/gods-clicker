@@ -13,7 +13,7 @@
                         <div class="row">
                             <div class="col-lg-4 offset-lg-4">
                                 <div class="progress" style="width: 100%; margin-top: 100px">
-                                    <div class="progress-bar bg-danger" v-bind:style="'width: '+monster.hp+'%'" role="progressbar"  aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ monster.hp }}</div>
+                                    <div class="progress-bar bg-danger" v-bind:style="'width: '+monster.currentHp+'%'" role="progressbar"  aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ monster.currentHp }}</div>
                                 </div>
                             </div>
                         </div>
@@ -76,6 +76,7 @@
                     cerberus: {
                         name: 'Цербер',
                         hp: 100,
+                        currentHp: 100,
                         reward: 10,
                         img: 'img/cerberus.png'
                     }
@@ -83,26 +84,50 @@
                     babaYaga: {
                         name: 'Баба Яга',
                         hp: 200,
+                        currentHp: 200,
                         reward: 20,
                         img: 'img/babayaga.png'
                     }
                 }],
-                currentMonster: [{
-                    name: 'Цербер',
-                    hp: 100,
-                    reward: 10,
-                    img: 'img/cerberus.png'
-                }],
-                clickDamage: 1
+                currentMonster: {
+                    monster: {
+                        name: 'Цербер',
+                        hp: 100,
+                        currentHp: 100,
+                        reward: 10,
+                        img: 'img/cerberus.png'
+                    }
+                },
+                clickDamage: 50
+            }
+        },
+        watch: {
+            'currentMonster.monster.currentHp': function (value) {
+                // eslint-disable-next-line
+                if (value <= 0) {
+                    this.faith += this.currentMonster.monster.reward;
+                    this.changeMonster();
+                }
             }
         },
         methods: {
             clickOnMonster() {
-
+                if (this.currentMonster.monster.currentHp >= 0) {
+                    this.currentMonster.monster.currentHp -= this.clickDamage;
+                }
             },
             changeMonster() {
+                for (let i of this.monsters) {
+                    for (let j in i) {
+                        if (i[j].name === this.currentMonster.monster.name) {
+                            continue;
+                        } else {
+                            Object.assign(this.currentMonster.monster, i[j]);
+                        }
+                    }
+                }
                 // eslint-disable-next-line
-                console.log(this.monsters);
+                // console.log(this.currentMonster);
             }
         }
     }
