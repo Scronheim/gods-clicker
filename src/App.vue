@@ -7,13 +7,13 @@
                         <div class="row">
                             <div class="col-lg-4 offset-lg-4">
                                 <h1 class="text-center monster-name">{{ monster.name }}</h1>
-                                <img :src="monster.img" alt="cerberus" class="monster" @click="clickOnMonster"/>
+                                <img :src="monster.img" width="500px" alt="cerberus" class="monster" @click="clickOnMonster"/>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-lg-4 offset-lg-4">
                                 <div class="progress" style="width: 100%; margin-top: 100px">
-                                    <div class="progress-bar bg-danger" v-bind:style="'width: '+monster.currentHp+'%'" role="progressbar"  aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ monster.currentHp }}</div>
+                                    <div class="progress-bar bg-danger" v-bind:style="'width: '+monster.currentHpPercent+'%'" role="progressbar"  aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ monster.currentHp }}/{{ monster.hp }}</div>
                                 </div>
                             </div>
                         </div>
@@ -73,27 +73,33 @@
                     }
                 },
                 monsters: [{
-                    cerberus: {
-                        name: 'Цербер',
-                        hp: 100,
-                        currentHp: 100,
-                        reward: 10,
-                        img: 'img/cerberus.png'
-                    }
+                    name: 'Цербер',
+                    hp: 100,
+                    currentHp: 100,
+                    currentHpPercent: 100,
+                    reward: 10,
+                    img: 'img/cerberus.png'
                 },{
-                    babaYaga: {
-                        name: 'Баба Яга',
-                        hp: 200,
-                        currentHp: 200,
-                        reward: 20,
-                        img: 'img/babayaga.png'
-                    }
+                    name: 'Гигант',
+                    hp: 500,
+                    currentHp: 500,
+                    currentHpPercent: 100,
+                    reward: 50,
+                    img: 'img/giant.png'
+                },{
+                    name: 'Крампус',
+                    hp: 700,
+                    currentHp: 700,
+                    currentHpPercent: 100,
+                    reward: 70,
+                    img: 'img/krampus.png'
                 }],
                 currentMonster: {
                     monster: {
                         name: 'Цербер',
                         hp: 100,
                         currentHp: 100,
+                        currentHpPercent: 100,
                         reward: 10,
                         img: 'img/cerberus.png'
                     }
@@ -103,7 +109,7 @@
         },
         watch: {
             'currentMonster.monster.currentHp': function (value) {
-                // eslint-disable-next-line
+                this.currentMonster.monster.currentHpPercent = value / this.currentMonster.monster.hp * 100;
                 if (value <= 0) {
                     this.faith += this.currentMonster.monster.reward;
                     this.changeMonster();
@@ -117,17 +123,7 @@
                 }
             },
             changeMonster() {
-                for (let i of this.monsters) {
-                    for (let j in i) {
-                        if (i[j].name === this.currentMonster.monster.name) {
-                            continue;
-                        } else {
-                            Object.assign(this.currentMonster.monster, i[j]);
-                        }
-                    }
-                }
-                // eslint-disable-next-line
-                // console.log(this.currentMonster);
+
             }
         }
     }
