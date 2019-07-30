@@ -2,13 +2,14 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-9">
-                <img src="img/sword.png" alt="Суммарный урон всех Богов" title="Суммарный урон всех Богов"><p title="Суммарный урон всех Богов" class="gods-damage">{{ godsDamage }}</p>
+                <img src="img/sword.png" title="Суммарный урон всех Богов">
+                <p title="Суммарный урон всех Богов" class="gods-damage">{{ convertGodsDamage }}</p>
                 <span v-for="monster of currentMonster" :key="monster.name">
                     <div class="background">
                         <div class="row">
                             <div class="col-lg-4 offset-lg-4">
                                 <h1 class="text-center monster-name">{{ monster.name }}</h1>
-                                <img :src="monster.img" width="500px" alt="cerberus" class="monster" @click="clickOnMonster"/>
+                                <img :src="monster.img" width="500px" height="600px" alt="cerberus" class="monster" @click="clickOnMonster"/>
                             </div>
                         </div>
                         <div class="row">
@@ -26,7 +27,7 @@
             </div>
             <div class="col-lg-3">
                 <div class="row">
-                    <img width="70px" alt="faith" src="img/faith_w.png"><p class="faith">{{ faith }}</p>
+                    <img width="70px" alt="faith" src="img/faith_w.png"><p class="faith">{{ convertFaith }}</p>
                     <img width="70px" alt="glory" src="img/glory_w.png" style="margin-left: 4vh"><p class="glory">{{ glory }}</p>
                 </div>
                 <div class="row">
@@ -39,6 +40,7 @@
 
 <script>
     import _ from 'lodash';
+    import numeral from 'numeral';
     export default {
         name: 'app',
         data() {
@@ -70,6 +72,36 @@
                         damage: 5,
                         cost: 5,
                         count: 0
+                    },
+                    shiva: {
+                        damage: 6,
+                        cost: 6,
+                        count: 0
+                    },
+                    zeus: {
+                        damage: 7,
+                        cost: 7,
+                        count: 0
+                    },
+                    veles: {
+                        damage: 8,
+                        cost: 8,
+                        count: 0
+                    },
+                    skadi: {
+                        damage: 9,
+                        cost: 9,
+                        count: 0
+                    },
+                    ra: {
+                        damage: 10,
+                        cost: 10,
+                        count: 0
+                    },
+                    osiris: {
+                        damage: 11,
+                        cost: 11,
+                        count: 0
                     }
                 },
                 monsters: [{
@@ -93,7 +125,36 @@
                     currentHpPercent: 100,
                     reward: 70,
                     img: 'img/monsters/krampus.png'
-                }],
+                },{
+                    name: 'Призрак',
+                    hp: 1000,
+                    currentHp: 1000,
+                    currentHpPercent: 100,
+                    reward: 150,
+                    img: 'img/monsters/ghost.png'
+                },{
+                    name: 'Ракшас',
+                    hp: 1300,
+                    currentHp: 1300,
+                    currentHpPercent: 100,
+                    reward: 190,
+                    img: 'img/monsters/rakshas.png'
+                },{
+                    name: 'Медуза',
+                    hp: 1500,
+                    currentHp: 1500,
+                    currentHpPercent: 100,
+                    reward: 220,
+                    img: 'img/monsters/medusa.png'
+                },{
+                    name: 'Повелитель душ',
+                    hp: 1700,
+                    currentHp: 1700,
+                    currentHpPercent: 100,
+                    reward: 270,
+                    img: 'img/monsters/lord-of-souls.png'
+                }
+                ],
                 currentMonster: {
                     monster: {
                         name: 'Цербер',
@@ -108,6 +169,14 @@
                 godsDamage: 0
             }
         },
+        computed: {
+            convertGodsDamage() {
+                return numeral(this.godsDamage).format('0.00a');
+            },
+            convertFaith() {
+                return numeral(this.faith).format('0.00a');
+            }
+        },
         watch: {
             'currentMonster.monster.currentHp': function (value) {
                 this.currentMonster.monster.currentHpPercent = value / this.currentMonster.monster.hp * 100;
@@ -117,8 +186,19 @@
                 }
             }
         },
-        created: function () {
+        updated() {
             let self = this;
+            setInterval(function () {
+                localStorage.setItem('faith', self.faith);
+                localStorage.setItem('glory', self.glory);
+                localStorage.setItem('godsDamage', self.godsDamage);
+                localStorage.setItem('clickDamage', self.clickDamage);
+            });
+        },
+        created() {
+            let self = this;
+            let randomMonsterIndex = _.random(0, this.monsters.length-1);
+            Object.assign(this.currentMonster.monster, this.monsters[randomMonsterIndex]);
             setInterval(function () {
                 self.currentMonster.monster.currentHp -= self.godsDamage;
             }, 1000)
