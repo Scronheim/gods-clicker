@@ -9,7 +9,7 @@
                         <div class="row">
                             <div class="col-lg-4 offset-lg-4">
                                 <h1 class="text-center monster-name">{{ monster.name }}</h1>
-                                <img :src="monster.img" width="500px" height="600px" alt="cerberus" class="monster" @click="clickOnMonster"/>
+                                <img v-cloak :src="monster.img" width="500px" height="600px" alt="cerberus" class="monster" @click="clickOnMonster"/>
                             </div>
                         </div>
                         <div class="row">
@@ -188,15 +188,24 @@
         },
         updated() {
             let self = this;
-            setInterval(function () {
-                localStorage.setItem('faith', self.faith);
-                localStorage.setItem('glory', self.glory);
-                localStorage.setItem('godsDamage', self.godsDamage);
-                localStorage.setItem('clickDamage', self.clickDamage);
-            });
+            localStorage.setItem('faith', self.faith);
+            localStorage.setItem('glory', self.glory);
+            localStorage.setItem('godsDamage', self.godsDamage);
+            localStorage.setItem('clickDamage', self.clickDamage);
         },
         created() {
             let self = this;
+            if (localStorage.getItem('faith')) {
+                self.faith = parseInt(localStorage.getItem('faith'));
+                self.glory = parseInt(localStorage.getItem('glory'));
+                self.godsDamage = parseInt(localStorage.getItem('godsDamage'));
+                self.clickDamage = parseInt(localStorage.getItem('clickDamage'));
+            } else {
+                localStorage.setItem('faith', 0);
+                localStorage.setItem('glory', 0);
+                localStorage.setItem('godsDamage', 0);
+                localStorage.setItem('clickDamage', this.clickDamage);
+            }
             let randomMonsterIndex = _.random(0, this.monsters.length-1);
             Object.assign(this.currentMonster.monster, this.monsters[randomMonsterIndex]);
             setInterval(function () {

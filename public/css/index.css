@@ -44,3 +44,6 @@ body {
     display: inline-block;
     margin-left: 10px;
 }
+[v-cloak] {
+    display: none;
+}
