@@ -2,6 +2,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-9">
+                <img src="img/sword.png" alt="Суммарный урон всех Богов" title="Суммарный урон всех Богов"><p title="Суммарный урон всех Богов" class="gods-damage">{{ godsDamage }}</p>
                 <span v-for="monster of currentMonster" :key="monster.name">
                     <div class="background">
                         <div class="row">
@@ -13,7 +14,10 @@
                         <div class="row">
                             <div class="col-lg-4 offset-lg-4">
                                 <div class="progress" style="width: 100%; margin-top: 100px">
-                                    <div class="progress-bar bg-danger" v-bind:style="'width: '+monster.currentHpPercent+'%'" role="progressbar"  aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">{{ monster.currentHp }}/{{ monster.hp }}</div>
+                                    <div class="progress-bar bg-danger" :style="'width: '+monster.currentHpPercent+'%'"
+                                         role="progressbar"  aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                                        {{ monster.currentHp }}/{{ monster.hp }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -26,17 +30,7 @@
                     <img width="70px" alt="glory" src="img/glory_w.png" style="margin-left: 4vh"><p class="glory">{{ glory }}</p>
                 </div>
                 <div class="row">
-                    <button type="button" style="background: url('img/aid.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/artemida.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/brahma.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/kali.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/odin.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/osiris.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/ra.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/shiva.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/skadi.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/veles.jpg'); width: 500px; height: 100px"></button>
-                    <button type="button" style="background: url('img/zeus.jpg'); width: 500px; height: 100px"></button>
+                    <button class="god" v-for="(god, name) of gods" :key="god.damage" type="button" :style="'background: url(img/gods/'+name+'.jpg)'" @click="clickOnGod(god)"></button>
                 </div>
             </div>
         </div>
@@ -44,6 +38,7 @@
 </template>
 
 <script>
+    import _ from 'lodash';
     export default {
         name: 'app',
         data() {
@@ -53,23 +48,28 @@
                 gods: {
                     aid: {
                         damage: 1,
-                        cost: 1
+                        cost: 1,
+                        count: 0,
                     },
                     artemida: {
                         damage: 2,
-                        cost: 2
+                        cost: 2,
+                        count: 0,
                     },
                     brahma: {
                         damage: 3,
-                        cost: 3
+                        cost: 3,
+                        count: 0,
                     },
                     kali: {
                         damage: 4,
-                        cost: 4
+                        cost: 4,
+                        count: 0
                     },
                     odin: {
                         damage: 5,
-                        cost: 5
+                        cost: 5,
+                        count: 0
                     }
                 },
                 monsters: [{
@@ -78,21 +78,21 @@
                     currentHp: 100,
                     currentHpPercent: 100,
                     reward: 10,
-                    img: 'img/cerberus.png'
+                    img: 'img/monsters/cerberus.png'
                 },{
                     name: 'Гигант',
                     hp: 500,
                     currentHp: 500,
                     currentHpPercent: 100,
                     reward: 50,
-                    img: 'img/giant.png'
+                    img: 'img/monsters/giant.png'
                 },{
                     name: 'Крампус',
                     hp: 700,
                     currentHp: 700,
                     currentHpPercent: 100,
                     reward: 70,
-                    img: 'img/krampus.png'
+                    img: 'img/monsters/krampus.png'
                 }],
                 currentMonster: {
                     monster: {
@@ -104,7 +104,8 @@
                         img: 'img/cerberus.png'
                     }
                 },
-                clickDamage: 50
+                clickDamage: 100,
+                godsDamage: 0
             }
         },
         watch: {
@@ -116,14 +117,28 @@
                 }
             }
         },
+        created: function () {
+            let self = this;
+            setInterval(function () {
+                self.currentMonster.monster.currentHp -= self.godsDamage;
+            }, 1000)
+        },
         methods: {
             clickOnMonster() {
                 if (this.currentMonster.monster.currentHp >= 0) {
                     this.currentMonster.monster.currentHp -= this.clickDamage;
                 }
             },
+            clickOnGod(god) {
+                if (this.faith >= god.cost) {
+                    this.faith -= god.cost;
+                    this.godsDamage += god.damage;
+                    god.count += 1;
+                }
+            },
             changeMonster() {
-
+                let randomMonsterIndex = _.random(0, this.monsters.length-1);
+                Object.assign(this.currentMonster.monster, this.monsters[randomMonsterIndex]);
             }
         }
     }

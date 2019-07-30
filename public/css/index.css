@@ -28,8 +28,19 @@ body {
     color: white;
 }
 .background {
-    margin-top: 3%;
+    /*margin-top: 3%;*/
     background: url('/img/background1.jpg');
     width: 100%;
     height: 100%;
+}
+.god {
+    width: 500px;
+    height: 100px;
+}
+.gods-damage {
+    font-family: 'Dancing Script', cursive;
+    font-size: larger;
+    color: white;
+    display: inline-block;
+    margin-left: 10px;
 }
