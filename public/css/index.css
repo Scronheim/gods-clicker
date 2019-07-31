@@ -44,6 +44,13 @@ body {
     display: inline-block;
     margin-left: 10px;
 }
+.current-zone {
+    font-family: 'Dancing Script', cursive;
+    font-size: larger;
+    color: white;
+    display: inline-block;
+    margin-left: 10px;
+}
 [v-cloak] {
     display: none;
 }

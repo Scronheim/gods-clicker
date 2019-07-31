@@ -3,12 +3,12 @@
         <div class="row">
             <div class="col-lg-9">
                 <img src="img/sword.png" title="Суммарный урон всех Богов">
-                <p title="Суммарный урон всех Богов" class="gods-damage">{{ convertGodsDamage }}</p>
+                <p title="Суммарный урон всех Богов" class="gods-damage">{{ convertGodsDamage }}</p><p class="current-zone">Уровень: {{ currentZone }}</p> <button class="btn btn-danger" @click="stopTimer()">Stop</button>
                 <span v-for="monster of currentMonster" :key="monster.name">
                     <div class="background">
                         <div class="row">
                             <div class="col-lg-4 offset-lg-4">
-                                <h1 class="text-center monster-name">{{ monster.name }}</h1>
+                                <h1 class="text-center monster-name">{{ monster.title }}</h1>
                                 <img v-cloak :src="monster.img" width="500px" height="600px" alt="cerberus" class="monster" @click="clickOnMonster"/>
                             </div>
                         </div>
@@ -105,59 +105,66 @@
                     }
                 },
                 monsters: [{
-                    name: 'Цербер',
+                    title: 'Цербер',
                     hp: 100,
                     currentHp: 100,
                     currentHpPercent: 100,
                     reward: 10,
                     img: 'img/monsters/cerberus.png'
                 },{
-                    name: 'Гигант',
+                    title: 'Гигант',
                     hp: 500,
                     currentHp: 500,
                     currentHpPercent: 100,
                     reward: 50,
                     img: 'img/monsters/giant.png'
                 },{
-                    name: 'Крампус',
+                    title: 'Крампус',
                     hp: 700,
                     currentHp: 700,
                     currentHpPercent: 100,
                     reward: 70,
                     img: 'img/monsters/krampus.png'
                 },{
-                    name: 'Призрак',
+                    title: 'Призрак',
                     hp: 1000,
                     currentHp: 1000,
                     currentHpPercent: 100,
                     reward: 150,
                     img: 'img/monsters/ghost.png'
                 },{
-                    name: 'Ракшас',
+                    title: 'Ракшас',
                     hp: 1300,
                     currentHp: 1300,
                     currentHpPercent: 100,
                     reward: 190,
                     img: 'img/monsters/rakshas.png'
                 },{
-                    name: 'Медуза',
+                    title: 'Медуза',
                     hp: 1500,
                     currentHp: 1500,
                     currentHpPercent: 100,
                     reward: 220,
                     img: 'img/monsters/medusa.png'
                 },{
-                    name: 'Повелитель душ',
+                    title: 'Повелитель душ',
                     hp: 1700,
                     currentHp: 1700,
                     currentHpPercent: 100,
                     reward: 270,
                     img: 'img/monsters/lord-of-souls.png'
+                },{
+                    title: 'Джин',
+                    hp: 2000,
+                    currentHp: 2000,
+                    currentHpPercent: 100,
+                    reward: 350,
+                    img: 'img/monsters/gin.png'
                 }
                 ],
                 currentMonster: {
                     monster: {
-                        name: 'Цербер',
+                        title: 'Цербер',
                         hp: 100,
                         currentHp: 100,
                         currentHpPercent: 100,
@@ -165,8 +172,11 @@
                         img: 'img/cerberus.png'
                     }
                 },
+                currentZone: 8,
                 clickDamage: 100,
-                godsDamage: 0
+                godsDamage: 0,
+                damageTimer: '',
+                bossHpMultiplier: 10
             }
         },
         computed: {
@@ -184,33 +194,43 @@
                     this.faith += this.currentMonster.monster.reward;
                     this.changeMonster();
                 }
+            },
+            'currentZone' : function (value) {
+                if ((value) % 10 === 0) {
+                    this.currentMonster.monster.hp *= this.bossHpMultiplier;
+                    this.currentMonster.monster.currentHp *= this.bossHpMultiplier;
+                    this.currentMonster.monster.title = 'Босс - ' + this.currentMonster.monster.title;
+                }
             }
         },
         updated() {
-            let self = this;
-            localStorage.setItem('faith', self.faith);
-            localStorage.setItem('glory', self.glory);
-            localStorage.setItem('godsDamage', self.godsDamage);
-            localStorage.setItem('clickDamage', self.clickDamage);
+            localStorage.setItem('faith', this.faith);
+            localStorage.setItem('glory', this.glory);
+            localStorage.setItem('godsDamage', this.godsDamage);
+            localStorage.setItem('clickDamage', this.clickDamage);
+            localStorage.setItem('currentZone', this.currentZone);
         },
         created() {
             let self = this;
             if (localStorage.getItem('faith')) {
-                self.faith = parseInt(localStorage.getItem('faith'));
-                self.glory = parseInt(localStorage.getItem('glory'));
-                self.godsDamage = parseInt(localStorage.getItem('godsDamage'));
-                self.clickDamage = parseInt(localStorage.getItem('clickDamage'));
+                this.faith = parseInt(localStorage.getItem('faith'));
+                this.glory = parseInt(localStorage.getItem('glory'));
+                this.godsDamage = parseInt(localStorage.getItem('godsDamage'));
+                this.clickDamage = parseInt(localStorage.getItem('clickDamage'));
+                this.currentZone = parseInt(localStorage.getItem('currentZone'));
             } else {
                 localStorage.setItem('faith', 0);
                 localStorage.setItem('glory', 0);
                 localStorage.setItem('godsDamage', 0);
                 localStorage.setItem('clickDamage', this.clickDamage);
+                localStorage.setItem('currentZone', this.currentZone);
             }
             let randomMonsterIndex = _.random(0, this.monsters.length-1);
             Object.assign(this.currentMonster.monster, this.monsters[randomMonsterIndex]);
-            setInterval(function () {
+            // this.changeMonster();
+            this.damageTimer = setInterval(function () {
                 self.currentMonster.monster.currentHp -= self.godsDamage;
-            }, 1000)
+            }, 1000);
         },
         methods: {
             clickOnMonster() {
@@ -228,6 +248,13 @@
             changeMonster() {
                 let randomMonsterIndex = _.random(0, this.monsters.length-1);
                 Object.assign(this.currentMonster.monster, this.monsters[randomMonsterIndex]);
+                this.changeZone();
+            },
+            stopTimer() {
+                clearInterval(this.damageTimer);
+            },
+            changeZone() {
+                this.currentZone += 1;
             }
         }
     }
