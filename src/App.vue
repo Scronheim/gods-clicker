@@ -28,18 +28,26 @@
             <div class="col-lg-3">
                 <img width="70px" alt="faith" src="img/faith_w.png"><p class="faith">{{ convertFaith }}</p>
                 <img width="70px" alt="glory" src="img/glory_w.png" style="margin-left: 4vh"><p class="glory">{{ glory }}</p>
-                <div class="scroll" v-if="plate === 1">
-                    <button class="god" v-for="(god, name) of gods" :key="god.damage" type="button" :style="'background: url(img/gods/'+name+'.jpg)'" @click="clickOnGod(god, $event)">{{god.count}}</button>
+                <div class="scroll" v-if="view === 1">
+                    <button class="god" v-for="(god, name) of gods" :key="god.damage" type="button" :style="'background: url(img/gods/'+name+'.jpg)'" @click="clickOnGod(god, $event)">
+                        {{god.count}} / {{ god.count*god.damage }}
+                    </button>
                 </div>
-                <div class="scroll" v-if="plate === 2">
+                <div class="scroll" v-if="view === 2">
                     Достижения
                 </div>
-                <div class="scroll" v-if="plate === 3">
+                <div class="scroll" v-if="view === 3">
                     Магазин
                 </div>
-                <button class="btn btn-dark" @click="plate = 1">Боги</button>
-                <button class="btn btn-dark" @click="plate = 2">Достижения</button>
-                <button class="btn btn-dark" @click="plate = 3">Магазин</button>
+                <div class="scroll" v-if="view === 4">
+                    Стастисика<br>
+                    Убито боссов: {{ player.killedBosses }} шт.<br/>
+                    Золота заработано: {{ convertAllTimeFaith }}
+                </div>
+                <button class="btn btn-dark" @click="view = 1">Боги</button>
+                <button class="btn btn-dark" @click="view = 2">Достижения</button>
+                <button class="btn btn-dark" @click="view = 3">Магазин</button>
+                <button class="btn btn-dark" @click="view = 4">Статистика</button>
             </div>
         </div>
     </div>
@@ -48,6 +56,7 @@
 <script>
     import _ from 'lodash';
     import numeral from 'numeral';
+
     export default {
         name: 'app',
         data() {
@@ -182,14 +191,15 @@
                 },
                 player: {
                     username: '',
-
+                    killedBosses: 0,
+                    allTimeFaith: 0
                 },
                 currentZone: 8,
                 clickDamage: 100,
                 godsDamage: 0,
                 damageTimer: '',
                 bossHpMultiplier: 10,
-                plate: 1
+                view: 1
             }
         },
         computed: {
@@ -198,22 +208,36 @@
             },
             convertFaith() {
                 return numeral(this.faith).format('0.00a');
+            },
+            convertAllTimeFaith() {
+                return numeral(this.player.allTimeFaith).format('0.00a');
             }
         },
         watch: {
             'currentMonster.monster.currentHp': function (value) {
                 this.currentMonster.monster.currentHpPercent = value / this.currentMonster.monster.hp * 100;
                 if (value <= 0) {
+                    if (this.currentMonster.monster.boss) {
+                        this.player.killedBosses += 1;
+                    }
                     //20% шанс выпадения славы с боссов
                     if ((_.random(1, 5)) === 5 && this.currentMonster.monster.boss) {
                         this.glory += 1;
                     }
                     this.faith += this.currentMonster.monster.reward;
+                    this.player.allTimeFaith += this.currentMonster.monster.reward;
                     this.changeMonster();
                 }
             },
             'currentZone' : function (value) {
+                let hpMultiplier = 1.20;
+                let rewardMultiplier = 1.20;
                 if ((value) % 10 === 0) {
+                    for (let monster of this.monsters) {
+                        monster.currentHp *= hpMultiplier;
+                        monster.hp *= hpMultiplier;
+                        monster.reward *= rewardMultiplier;
+                    }
                     this.currentMonster.monster.boss = true;
                     this.currentMonster.monster.hp *= this.bossHpMultiplier;
                     this.currentMonster.monster.currentHp *= this.bossHpMultiplier;
@@ -229,8 +253,9 @@
             localStorage.setItem('godsDamage', this.godsDamage);
             localStorage.setItem('clickDamage', this.clickDamage);
             localStorage.setItem('currentZone', this.currentZone);
-            // console.log(JSON.stringify(this.gods))
             localStorage.setItem('gods', JSON.stringify(this.gods));
+            localStorage.setItem('allTimeFaith', this.player.allTimeFaith);
+            localStorage.setItem('killedBosses', this.player.killedBosses);
         },
         created() {
             let self = this;
@@ -241,6 +266,8 @@
                 this.clickDamage = parseInt(localStorage.getItem('clickDamage'));
                 this.currentZone = parseInt(localStorage.getItem('currentZone'));
                 this.gods = JSON.parse(localStorage.getItem('gods'));
+                this.player.killedBosses = parseInt(localStorage.getItem('killedBosses'));
+                this.player.allTimeFaith = parseInt(localStorage.getItem('allTimeFaith'));
             } else {
                 localStorage.setItem('faith', 0);
                 localStorage.setItem('glory', 0);
@@ -248,6 +275,8 @@
                 localStorage.setItem('clickDamage', this.clickDamage);
                 localStorage.setItem('currentZone', this.currentZone);
                 localStorage.setItem('gods', JSON.stringify(this.gods));
+                localStorage.setItem('allTimeFaith', 0);
+                localStorage.setItem('killedBosses', 0);
             }
             let randomMonsterIndex = _.random(0, this.monsters.length-1);
             Object.assign(this.currentMonster.monster, this.monsters[randomMonsterIndex]);
