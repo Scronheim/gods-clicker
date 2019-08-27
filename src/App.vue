@@ -26,13 +26,20 @@
                 </span>
             </div>
             <div class="col-lg-3">
-                <div class="row">
-                    <img width="70px" alt="faith" src="img/faith_w.png"><p class="faith">{{ convertFaith }}</p>
-                    <img width="70px" alt="glory" src="img/glory_w.png" style="margin-left: 4vh"><p class="glory">{{ glory }}</p>
+                <img width="70px" alt="faith" src="img/faith_w.png"><p class="faith">{{ convertFaith }}</p>
+                <img width="70px" alt="glory" src="img/glory_w.png" style="margin-left: 4vh"><p class="glory">{{ glory }}</p>
+                <div class="scroll" v-if="plate === 1">
+                    <button class="god" v-for="(god, name) of gods" :key="god.damage" type="button" :style="'background: url(img/gods/'+name+'.jpg)'" @click="clickOnGod(god)">{{god.count}}</button>
                 </div>
-                <div class="row">
-                    <button class="god" v-for="(god, name) of gods" :key="god.damage" type="button" :style="'background: url(img/gods/'+name+'.jpg)'" @click="clickOnGod(god)"></button>
+                <div class="scroll" v-if="plate === 2">
+                    Достижения
                 </div>
+                <div class="scroll" v-if="plate === 3">
+                    Магазин
+                </div>
+                <button class="btn btn-dark" @click="plate = 1">Боги</button>
+                <button class="btn btn-dark" @click="plate = 2">Достижения</button>
+                <button class="btn btn-dark" @click="plate = 3">Магазин</button>
             </div>
         </div>
     </div>
@@ -169,14 +176,20 @@
                         currentHp: 100,
                         currentHpPercent: 100,
                         reward: 10,
-                        img: 'img/cerberus.png'
+                        img: 'img/cerberus.png',
+                        boss: false
                     }
+                },
+                player: {
+                    username: '',
+
                 },
                 currentZone: 8,
                 clickDamage: 100,
                 godsDamage: 0,
                 damageTimer: '',
-                bossHpMultiplier: 10
+                bossHpMultiplier: 10,
+                plate: 1
             }
         },
         computed: {
@@ -191,15 +204,22 @@
             'currentMonster.monster.currentHp': function (value) {
                 this.currentMonster.monster.currentHpPercent = value / this.currentMonster.monster.hp * 100;
                 if (value <= 0) {
+                    //20% шанс выпадения славы с боссов
+                    if ((_.random(1, 5)) === 5 && this.currentMonster.monster.boss) {
+                        this.glory += 1;
+                    }
                     this.faith += this.currentMonster.monster.reward;
                     this.changeMonster();
                 }
             },
             'currentZone' : function (value) {
                 if ((value) % 10 === 0) {
+                    this.currentMonster.monster.boss = true;
                     this.currentMonster.monster.hp *= this.bossHpMultiplier;
                     this.currentMonster.monster.currentHp *= this.bossHpMultiplier;
                     this.currentMonster.monster.title = 'Босс - ' + this.currentMonster.monster.title;
+                } else {
+                    this.currentMonster.monster.boss = false;
                 }
             }
         },
@@ -209,6 +229,8 @@
             localStorage.setItem('godsDamage', this.godsDamage);
             localStorage.setItem('clickDamage', this.clickDamage);
             localStorage.setItem('currentZone', this.currentZone);
+            // console.log(JSON.stringify(this.gods))
+            localStorage.setItem('gods', JSON.stringify(this.gods));
         },
         created() {
             let self = this;
@@ -218,12 +240,14 @@
                 this.godsDamage = parseInt(localStorage.getItem('godsDamage'));
                 this.clickDamage = parseInt(localStorage.getItem('clickDamage'));
                 this.currentZone = parseInt(localStorage.getItem('currentZone'));
+                this.gods = JSON.parse(localStorage.getItem('gods'));
             } else {
                 localStorage.setItem('faith', 0);
                 localStorage.setItem('glory', 0);
                 localStorage.setItem('godsDamage', 0);
                 localStorage.setItem('clickDamage', this.clickDamage);
                 localStorage.setItem('currentZone', this.currentZone);
+                localStorage.setItem('gods', JSON.stringify(this.gods));
             }
             let randomMonsterIndex = _.random(0, this.monsters.length-1);
             Object.assign(this.currentMonster.monster, this.monsters[randomMonsterIndex]);
