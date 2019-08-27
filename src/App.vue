@@ -29,7 +29,7 @@
                 <img width="70px" alt="faith" src="img/faith_w.png"><p class="faith">{{ convertFaith }}</p>
                 <img width="70px" alt="glory" src="img/glory_w.png" style="margin-left: 4vh"><p class="glory">{{ glory }}</p>
                 <div class="scroll" v-if="plate === 1">
-                    <button class="god" v-for="(god, name) of gods" :key="god.damage" type="button" :style="'background: url(img/gods/'+name+'.jpg)'" @click="clickOnGod(god)">{{god.count}}</button>
+                    <button class="god" v-for="(god, name) of gods" :key="god.damage" type="button" :style="'background: url(img/gods/'+name+'.jpg)'" @click="clickOnGod(god, $event)">{{god.count}}</button>
                 </div>
                 <div class="scroll" v-if="plate === 2">
                     Достижения
@@ -262,11 +262,23 @@
                     this.currentMonster.monster.currentHp -= this.clickDamage;
                 }
             },
-            clickOnGod(god) {
+            clickOnGod(god, event) {
+                let ctrlMultiplier = 10;
+                let shiftMultiplier = 50;
                 if (this.faith >= god.cost) {
-                    this.faith -= god.cost;
-                    this.godsDamage += god.damage;
-                    god.count += 1;
+                    if (event.ctrlKey) {
+                        this.faith -= god.cost*ctrlMultiplier;
+                        this.godsDamage += god.damage*ctrlMultiplier;
+                        god.count += ctrlMultiplier;
+                    } else if (event.shiftKey) {
+                        this.faith -= god.cost*shiftMultiplier;
+                        this.godsDamage += god.damage*shiftMultiplier;
+                        god.count += shiftMultiplier;
+                    } else {
+                        this.faith -= god.cost;
+                        this.godsDamage += god.damage;
+                        god.count += 1;
+                    }
                 }
             },
             changeMonster() {
